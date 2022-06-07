@@ -1,6 +1,10 @@
+const {Operation} = require("../models/models")
+const ApiError = require('../error/ApiError')
+
 class OperationController {
     async getAll(req, res) {
-
+        const operations = await Operation.findAll()
+        return res.json(operations)
     }
 
     async getOne(req, res) {

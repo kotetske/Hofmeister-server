@@ -3,7 +3,8 @@ const ApiError = require('../error/ApiError')
 
 class AccountController {
     async getAll(req, res) {
-
+        const categories = await Category.findAll()
+        return res.json(categories)
     }
 
     async getOne(req, res) {
