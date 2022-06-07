@@ -11,8 +11,8 @@ const Account = sequelize.define('account', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     num: {type: DataTypes.STRING, unique: true, allowNull: false},
     name: {type: DataTypes.STRING, allowNull: false},
-    balance: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
-    creditlimit: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
+    balance: {type: DataTypes.DOUBLE, allowNull: false},
+    creditlimit: {type: DataTypes.DOUBLE, allowNull: false},
     inArchive: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false},
 })
 
