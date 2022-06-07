@@ -1,0 +1,707 @@
+openapi: 3.0.1
+info:
+  title: Hofmeister API
+  description: Это спецификация OpenAPI для сервиса управления финансами и помощи в ведении домашнего хозяйства
+  termsOfService: https://ctdl.one/terms
+  contact:
+    email: ctdl.systems@gmail.com
+  license:
+    name: Node.js
+    url: https://github.com/nodejs/node/blob/master/LICENSE
+  version: 0.1.0
+servers:
+- url: //ctdl.one/
+tags:
+- name: User
+  description: Auth, login and registration of user
+- name: Account
+  description: CRUD operations on accounts
+- name: Operation
+  description: CRUD operations on finance operations
+- name: Category
+  description: CRUD operations on categories
+- name: Account Metadata
+  description: Operations on metadata for creation/update of accounts
+- name: Operation Metadata
+  description: Operations on metadata for creation/update of operations or category  
+paths:
+  /api/user/auth:
+    get:
+      summary: auth by username and password and get access and refresh tokens
+      tags:
+      - User
+      operationId: getToken
+      description: Авторизация пользователя, получение токена доступа к методам API
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        418:
+          $ref: '#/components/responses/ImaTeapot'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /api/user/login:
+    post: 
+      summary: get access using refresh token
+      tags:
+        - User
+      operationId: refreshToken
+      description: "Авторизация пользователя, обмен refresh_token на access_token для доступа к методам API"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/Token"
+                - required:
+                    - refresh_token
+      responses:
+        201:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+  /api/user/registration:
+    post: 
+      summary: create user registration data
+      tags:
+        - User
+      operationId: registration
+      description: "Регистрация пользователя"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/Token"
+                - required:
+                    - refresh_token
+      responses:
+        201:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+  /api/account:
+    get:
+      summary: get all accounts
+      tags:
+      - Account
+      description: Получение всех счетов пользователя
+      operationId: getAllAcc
+      security:
+      - ApiKeyAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/accounts"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+    post:
+      summary: create account
+      tags:
+      - Account
+      description: Создание нового счета
+      operationId: addAcc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createAccount"
+      security:
+      - ApiKeyAuth: []        
+      responses:
+        201:
+          headers:
+            Location:
+              schema:
+                type: string
+              description: uri of new object
+          description: Created
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"  
+        409:
+          $ref: "#/components/responses/Conflict"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+  /api/account/{id}:
+    patch:
+      summary: "partially update account"
+      tags:
+        - Account
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      
+      description: "Частичное обновление счета (можно обновить не все поля)"
+      operationId: updAcc
+      security:
+      - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/account"
+      responses:
+        204:
+          description: 'No Content'
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        409:
+          $ref: "#/components/responses/Conflict"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+    delete:
+      summary: "delete account by id"
+      tags:
+        - Account
+      description: "Удаление счета по id"
+      operationId: delAcc
+      security:
+      - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: "No Content"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          $ref: "#/components/responses/NotFound"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+  /api/accountMeta:
+    get:
+      summary: get metadata for creation/edit account
+      tags:
+      - Account Metadata
+      description: Получение метаданных для создания/обновления счета
+      operationId: getAccMeta
+      security:
+      - ApiKeyAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/accountMeta"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+  /api/category:
+    get:
+      summary: get all categories
+      tags:
+      - Category
+      description: Получение всех категорий пользователя
+      operationId: getCat
+      security:
+      - ApiKeyAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/categories"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+    post:
+      summary: create category
+      tags:
+      - Category
+      description: Создание новой категории
+      operationId: addCat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createCategory"
+      security:
+      - ApiKeyAuth: []        
+      responses:
+        201:
+          headers:
+            Location:
+              schema:
+                type: string
+              description: uri of new object
+          description: Created
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"  
+        409:
+          $ref: "#/components/responses/Conflict"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+  /api/category/{id}:
+    patch:
+      summary: "partially update category"
+      tags:
+        - Category
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      description: "Частичное обновление категории (можно обновить не все поля)"
+      operationId: updCat
+      security:
+      - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/category"
+      responses:
+        204:
+          description: 'No Content'
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        409:
+          $ref: "#/components/responses/Conflict"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+    delete:
+      summary: "delete category by id"
+      tags:
+        - Category
+      description: "Удаление категории по id"
+      operationId: delCat
+      security:
+      - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: "No Content"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          $ref: "#/components/responses/NotFound"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+  /api/operationMeta:
+    get:
+      summary: get metadata for creation/edit operation or category
+      tags:
+      - Operation Metadata
+      description: Получение метаданных для создания/обновления счета или категории
+      operationId: getOperMeta
+      security:
+      - ApiKeyAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/operationMeta"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+  /api/operation:
+    get:
+      summary: get all operations
+      tags:
+      - Operation
+      description: Получение всех операций пользователя
+      operationId: getOper
+      security:
+      - ApiKeyAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/operations"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+    post:
+      summary: create operation
+      tags:
+      - Operation
+      description: Создание нового счета
+      operationId: addOper
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createOperation"
+      security:
+      - ApiKeyAuth: []        
+      responses:
+        201:
+          headers:
+            Location:
+              schema:
+                type: string
+              description: uri of new object
+          description: Created
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"  
+        409:
+          $ref: "#/components/responses/Conflict"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+  /api/operation/{id}:
+    patch:
+      summary: "partially update operation"
+      tags:
+        - Operation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      
+      description: "Частичное обновление операции (можно обновить не все поля)"
+      operationId: updOper
+      security:
+      - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/operation"
+      responses:
+        204:
+          description: 'No Content'
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        409:
+          $ref: "#/components/responses/Conflict"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+    delete:
+      summary: "delete operation by id"
+      tags:
+        - Operation
+      description: "Удаление операции по id"
+      operationId: delOper
+      security:
+      - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: "No Content"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          $ref: "#/components/responses/NotFound"
+        418:
+          $ref: "#/components/responses/ImaTeapot"
+        500:
+          $ref: "#/components/responses/InternalError"
+    
+components:
+  securitySchemes:
+    ApiKeyAuth:        # arbitrary name for the security scheme
+      type: apiKey
+      in: query       # can be "header", "query" or "cookie"
+      name: API_KEY  # name of the header, query parameter or cookie
+      
+  headers:
+    RequestSuccess:
+      schema:
+        type: string
+      description: "if the application has successfully processed the request, it returns success. If an error occurs during the processing of the request, it returns fail."
+
+  responses:
+    minimalResponse:
+      description: "OK"
+    
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Conflict:
+      description: Resource Already Exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    ImaTeapot:
+      description: Code Execution Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    InternalError:
+      description: Internal Server Error
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error_code:
+          type: string
+        developer_message:
+          type: string
+      required:
+        - error_code
+        - message
+        - developer_message
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+        refresh_token:
+          type: string
+    
+    #Счета
+    accounts:
+      type: array
+      items:
+        $ref: "#/components/schemas/account"
+    account:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        type:
+          type: integer
+        bank:
+          type: integer
+        currency:
+          type: integer
+        num:
+          type: string
+        name:
+          type: string
+        balance:
+          type: integer
+        creditlimit:
+          type: integer
+        archive:
+          type: boolean
+    createAccount:
+      allOf:
+        - $ref: "#/components/schemas/account"
+        - required:
+            - user_id
+            - type
+            - bank
+            - currency
+            - num
+            - name
+            - balance
+    accountMeta:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/banks"
+        - $ref: "#/components/schemas/accountTypes"
+        - $ref: "#/components/schemas/currencies"
+    banks:
+      type: array
+      items:
+        $ref: "#/components/schemas/bank"
+    bank:
+      type: object
+      properties:
+        name: 
+          type: string
+    accountTypes:
+      type: array
+      items:
+        $ref: "#/components/schemas/accountType"
+    accountType:
+      type: object
+      properties:
+        name: 
+          type: string
+    currencies:
+      type: array
+      items:
+        $ref: "#/components/schemas/currency"
+    currency:
+      type: object
+      properties:
+        name: 
+          type: string
+    operationMeta:
+      type: object
+      properties:
+        name:
+          type: string
+    
+    #Категории
+    categories:
+      type: array
+      items:
+        $ref: "#/components/schemas/category"
+    category:
+      type: object
+      properties:
+        name:
+          type: string
+        income:
+          type: boolean
+        expense:
+          type: boolean
+    createCategory:
+      allOf:
+        - $ref: "#/components/schemas/category"
+        - required:
+            - name
+            - income
+            - expense
+    
+    #операции
+    operations:
+      type: array
+      items:
+        $ref: "#/components/schemas/operation"
+    operation:
+      type: object
+      properties:
+        account:
+          type: integer
+        categories:
+          $ref: "#/components/schemas/categories"
+        place:
+          type: string
+        sum: 
+          type: integer
+        data:
+          type: string
+        comment:
+          type: string
+    createOperation:
+      allOf:
+        - $ref: "#/components/schemas/operation"
+        - required:
+            - account
+            - sum
+            - data
