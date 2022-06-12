@@ -18,7 +18,7 @@ const Account = sequelize.define('account',
         num: {type: DataTypes.STRING, unique: true, allowNull: false},
         name: {type: DataTypes.STRING, allowNull: false},
         balance: {type: DataTypes.DOUBLE, allowNull: false},
-        creditlimit: {type: DataTypes.DOUBLE, allowNull: false},
+        creditLimit: {type: DataTypes.DOUBLE, allowNull: false},
         inArchive: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false},
     },
     {
@@ -80,8 +80,8 @@ const Icon = sequelize.define('icon', {
 
 const Category = sequelize.define('category', {
         id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-        level: {type: DataTypes.BOOLEAN},
         name: {type: DataTypes.STRING, unique: true, allowNull: false},
+        level: {type: DataTypes.BOOLEAN},
         income: {type: DataTypes.BOOLEAN, allowNull: false},
         expense: {type: DataTypes.BOOLEAN, allowNull: false},
     },
@@ -121,7 +121,7 @@ AccountType.hasMany(Account, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     foreignKey: {
-        name: 'typeId',
+        name: 'accountTypeId',
         allowNull: false
     }
 })
@@ -158,16 +158,30 @@ Account.hasMany(Operation, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     foreignKey: {
+        name: 'donorAccountId',
         allowNull: false
     }
 })
-Operation.belongsTo(Account)
+Operation.belongsTo(Account, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    foreignKey: {
+        name: 'donorAccountId',
+        allowNull: false
+    }
+})
 
 Account.hasMany(Operation, {
     onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+    onUpdate: 'CASCADE',
+    foreignKey: {
+        name: 'recipientAccountId',
+        allowNull: true
+    }
 })
 Operation.belongsTo(Account, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
     foreignKey: {
         name: 'recipientAccountId',
         allowNull: true
@@ -177,9 +191,19 @@ Operation.belongsTo(Account, {
 Category.hasMany(Category, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    foreignKey: 'parentId'
+    foreignKey: {
+        name: 'parentCategoryId',
+        allowNull: true
+    }
 })
-Category.belongsTo(Category)
+Category.belongsTo(Category, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    foreignKey: {
+        name: 'parentCategoryId',
+        allowNull: true
+    }
+})
 
 OperationType.hasMany(Category, {
     onDelete: 'CASCADE',
@@ -220,7 +244,6 @@ Operation.hasMany(CategoryOperation, {
     }
 })
 CategoryOperation.belongsTo(Operation)
-
 
 
 module.exports = {

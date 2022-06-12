@@ -2,9 +2,10 @@ const {Account} = require("../models/models")
 const ApiError = require('../error/ApiError')
 
 class AccountController {
+    //получить все счета пользователя
     async getAll(req, res) {
-        const categories = await Category.findAll()
-        return res.json(categories)
+        const accounts = await Account.findAll()
+        return res.json(accounts)
     }
 
     async getOne(req, res) {
@@ -12,17 +13,17 @@ class AccountController {
     }
 
     async create(req, res) {
-        const {userId, accountTypeId, bankId, currencyId, num, name, balance, creditlimit, inArchive} = req.body
+        const {userId, accountTypeId, bankId, currencyId, num, name, balance, creditLimit, inArchive} = req.body
         const account = await Account.create({
-            num,
-            name,
-            balance,
-            creditlimit,
-            inArchive,
             userId,
             accountTypeId,
             bankId,
-            currencyId
+            currencyId,
+            num,
+            name,
+            balance,
+            creditLimit,
+            inArchive
         })
         return res.json(account)
     }

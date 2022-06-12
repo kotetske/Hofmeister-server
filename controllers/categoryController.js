@@ -12,8 +12,12 @@ class CategoryController {
     }
 
     async create(req, res) {
-        const {name, level, income, expense} = req.body
+        const {userId, operationTypeId, parentCategoryId, iconId, name, level, income, expense} = req.body
         const category = await Category.create({
+            userId,
+            operationTypeId,
+            parentCategoryId,
+            iconId,
             name,
             level,
             income,
