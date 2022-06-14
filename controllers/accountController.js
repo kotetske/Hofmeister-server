@@ -4,7 +4,8 @@ const ApiError = require('../error/ApiError')
 class AccountController {
     //получить все счета пользователя
     async getAll(req, res) {
-        const accounts = await Account.findAll()
+        const userId = req.user.id
+        const accounts = await Account.findAndCountAll({where: {userId}})
         return res.json(accounts)
     }
 
@@ -13,7 +14,8 @@ class AccountController {
     }
 
     async create(req, res) {
-        const {userId, accountTypeId, bankId, currencyId, num, name, balance, creditLimit, inArchive} = req.body
+        const userId = req.user.id
+        const {accountTypeId, bankId, currencyId, num, name, balance, creditLimit, inArchive} = req.body
         const account = await Account.create({
             userId,
             accountTypeId,

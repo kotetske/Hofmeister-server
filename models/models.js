@@ -117,6 +117,16 @@ User.hasMany(Category, {
 })
 Category.belongsTo(User)
 
+User.hasMany(Operation, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    foreignKey: {
+        name: 'userId',
+        allowNull: false
+    }
+})
+Operation.belongsTo(User)
+
 AccountType.hasMany(Account, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
@@ -244,7 +254,6 @@ Operation.hasMany(CategoryOperation, {
     }
 })
 CategoryOperation.belongsTo(Operation)
-
 
 module.exports = {
     User,
