@@ -24,7 +24,7 @@ const start = async () => {
         await sequelize.authenticate()
         await sequelize.sync()
 
-        /* //заполняем базу минимальными данными
+         //заполняем базу минимальными данными
         await models.User.create({
             email: 'kotetske1@gmail.com',
             password: '$2a$05$ns6k/iIeeCdIry1wxDm2dOIq7mnYSgNxPZpU2ngJYfUqy0qaaG03W'
@@ -157,7 +157,7 @@ const start = async () => {
             userId: 1,
             donorAccountId: 1,
             operationTypeId: 3
-        })*/
+        })
 
 
         app.listen(PORT, () => console.log(`Server started on port ${PORT}`))
