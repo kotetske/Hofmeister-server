@@ -3,8 +3,9 @@ const ApiError = require('../error/ApiError')
 
 class CategoryController {
     async getAll(req, res) {
-        const userId = req.user.id
-        const categories = await Category.findAndCountAll({where: {userId}})
+        //const userId = req.user.id
+        //const categories = await Category.findAndCountAll({where: {userId}})
+        const categories = await Category.findAll()
         return res.json(categories)
     }
 

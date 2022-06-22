@@ -4,8 +4,9 @@ const ApiError = require('../error/ApiError')
 class AccountController {
     //получить все счета пользователя
     async getAll(req, res) {
-        const userId = req.user.id
-        const accounts = await Account.findAndCountAll({where: {userId}})
+        //const userId = req.user.id
+        //const accounts = await Account.findAll({where: {userId}})
+        const accounts = await Account.findAll()
         return res.json(accounts)
     }
 

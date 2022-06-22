@@ -8,29 +8,32 @@ class OperationController {
         const operations = await Operation.findAll()
         return res.json(operations)*/
         let {donorAccountId, operationTypeId, limit, page} = req.query
-        const userId = req.user.id
-        console.log(req.body.donorAccountId)
-        console.log("OperationController")
+        //const userId = req.user.id
+        //console.log(req.body.donorAccountId)
+        //console.log("OperationController")
         page = page || 1
         limit = limit || 100
         let offset = page * limit - limit
         let operations;
         if (!donorAccountId && !operationTypeId) {
-            operations = await Operation.findAndCountAll({where: {userId}, limit, offset})
+            //operations = await Operation.findAndCountAll({where: {userId}, limit, offset})
+            operations = await Operation.findAndCountAll({limit, offset})
         }
         if (donorAccountId && !operationTypeId) {
-            operations = await Operation.findAndCountAll({where: {userId, donorAccountId}, limit, offset})
+            //operations = await Operation.findAndCountAll({where: {userId, donorAccountId}, limit, offset})
+            operations = await Operation.findAndCountAll({where: {donorAccountId}, limit, offset})
         }
         if (!donorAccountId && operationTypeId) {
-            operations = await Operation.findAndCountAll({where: {userId, operationTypeId}, limit, offset})
+            //operations = await Operation.findAndCountAll({where: {userId, operationTypeId}, limit, offset})
+            operations = await Operation.findAndCountAll({where: {operationTypeId}, limit, offset})
         }
         if (donorAccountId && operationTypeId) {
-            operations = await Operation.findAndCountAll({
-                where: {userId, donorAccountId, operationTypeId},
-                limit,
-                offset
-            })
+            //operations = await Operation.findAndCountAll({where: {userId, donorAccountId, operationTypeId}, limit, offset})
+            operations = await Operation.findAndCountAll({where: {donorAccountId, operationTypeId}, limit, offset})
         }
+        //console.log('donorAccountId' + donorAccountId)
+        //console.log('operationTypeId' + operationTypeId)
+
         return res.json(operations)
     }
 
